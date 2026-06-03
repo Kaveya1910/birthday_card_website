@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Celebration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Poppins:wght@300;400;600;700&family=Sacramento&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .cursive { font-family: 'Sacramento', cursive; }
+        
+        /* Ultra-bold, clean sans-serif typeface to ensure maximum clarity and readability */
+        .prominent-name {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.08em;
+        }
+        
+        /* Background canvas setup for smooth firework particle rendering */
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* Forces active UI components above the animation layer */
+        .interactive-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 10x10 Snakes and Ladders Grid System */
+        .snakes-board {
+            display: grid;
+            grid-template-columns: repeat(10, minmax(0, 1fr));
+            grid-template-rows: repeat(10, minmax(0, 1fr));
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        /* Dice Spinning Animation Class */
+        @keyframes dieRoll {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(0.8); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .animate-roll {
+            animation: dieRoll 0.4s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-tr from-slate-950 via-indigo-950 to-violet-950 min-h-screen text-slate-100 overflow-x-hidden selection:bg-pink-500 selection:text-white">
+
+    <canvas id="fireworksCanvas"></canvas>
+
+    <div id="page1" class="interactive-content flex flex-col items-center justify-center min-h-screen p-4 transition-all duration-500">
+        <div class="bg-slate-900/40 backdrop-blur-xl p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border border-white/10 shadow-indigo-500/10 transform hover:scale-[1.01] transition-transform">
+            <div class="text-6xl mb-4 drop-shadow-md animate-bounce">🎁</div>
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-pink-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-transparent mb-2">
+                Someone has a surprise!
+            </h1>
+            <p class="text-slate-400 text-sm mb-6">Enter the secret passcode name to unlock the celebration page.</p>
+            
+            <form id="nameForm" class="space-y-4" onsubmit="navigateToPage2(event)">
+                <input 
+                    type="text" 
+                    id="recipientName" 
+                    required 
+                    placeholder="Enter Recipient's Name" 
+                    class="w-full px-5 py-3 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all bg-slate-950/60 text-center text-lg font-medium text-white placeholder-slate-500"
+                >
+                
+                <p id="errorMessage" class="text-pink-400 text-sm font-medium hidden">
+                    ⚠️ Access Denied! Name must match the uppercase key.
+                </p>
+
+                <button 
+                    type="submit" 
+                    class="w-full bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-pink-500/20 transition-all duration-300 transform active:scale-95"
+                >
+                    Open Surprise ✨
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="page2" class="interactive-content hidden max-w-4xl mx-auto px-4 py-12 space-y-12 transition-all duration-500">
+        
+        <header class="text-center space-y-4">
+            <h2 class="text-4xl md:text-5xl font-extrabold tracking-wide bg-gradient-to-r from-pink-400 to-amber-300 bg-clip-text text-transparent uppercase animate-pulse">
+                Advance Happy Birthday
+            </h2>
+            <h1 id="displayName" class="prominent-name text-6xl md:text-8xl font-black bg-gradient-to-r from-yellow-300 via-pink-400 to-fuchsia-400 bg-clip-text text-transparent drop-shadow-[0_4px_20px_rgba(236,72,153,0.6)] p-2 uppercase">
+                </h1>
+        </header>
+
+        <section class="bg-slate-900/40 backdrop-blur-xl p-6 rounded-3xl shadow-xl border border-white/10 shadow-purple-500/5 text-center">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-fuchsia-400 mb-4">Counting down to their Birthday</h3>
+            <div class="grid grid-cols-4 gap-3 max-w-md mx-auto">
+                <div class="bg-slate-950/80 border border-purple-500/20 text-white p-3 rounded-2xl shadow-inner">
+                    <span id="days" class="block text-2xl md:text-3xl font-bold text-pink-400">00</span>
+                    <span class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400">Days</span>
+                </div>
+                <div class="bg-slate-950/80 border border-purple-500/20 text-white p-3 rounded-2xl shadow-inner">
+                    <span id="hours" class="block text-2xl md:text-3xl font-bold text-fuchsia-400">00</span>
+                    <span class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400">Hours</span>
+                </div>
+                <div class="bg-slate-950/80 border border-purple-500/20 text-white p-3 rounded-2xl shadow-inner">
+                    <span id="minutes" class="block text-2xl md:text-3xl font-bold text-purple-400">00</span>
+                    <span class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400">Mins</span>
+                </div>
+                <div class="bg-slate-950/80 border border-purple-500/20 text-white p-3 rounded-2xl shadow-inner">
+                    <span id="seconds" class="block text-2xl md:text-3xl font-bold text-indigo-400">00</span>
+                    <span class="text-[10px] md:text-xs uppercase tracking-wider text-slate-400">Secs</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-4">
+            <h3 class="text-2xl font-bold text-center cursive text-5xl bg-gradient-to-r from-fuchsia-300 to-purple-300 bg-clip-text text-transparent">Shared Memories</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-slate-900/80 p-2.5 rounded-2xl shadow-md border border-white/5 transform hover:-rotate-2 hover:scale-105 transition-all duration-300 hover:border-pink-500/30">
+                    <img src="./child4.jpeg" alt="Memory 1" class="rounded-xl w-full h-48 object-cover brightness-90 contrast-105">
+                </div>
+                <div class="bg-slate-900/80 p-2.5 rounded-2xl shadow-md border border-white/5 transform hover:rotate-2 hover:scale-105 transition-all duration-300 hover:border-fuchsia-500/30">
+                    <img src="./child3.jpeg" alt="Memory 2" class="rounded-xl w-full h-48 object-cover brightness-90 contrast-105">
+                </div>
+                <div class="bg-slate-900/80 p-2.5 rounded-2xl shadow-md border border-white/5 transform hover:-rotate-2 hover:scale-105 transition-all duration-300 hover:border-purple-500/30">
+                    <img src="child2.jpeg" alt="Memory 3" class="rounded-xl w-full h-48 object-cover brightness-90 contrast-105">
+                </div>
+                <div class="bg-slate-900/80 p-2.5 rounded-2xl shadow-md border border-white/5 transform hover:rotate-2 hover:scale-105 transition-all duration-300 hover:border-indigo-500/30">
+                    <img src="child1.jpeg" alt="Memory 4" class="rounded-xl w-full h-48 object-cover brightness-90 contrast-105">
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-slate-900/40 backdrop-blur-xl p-4 md:p-8 rounded-3xl border border-white/10 shadow-xl max-w-xl mx-auto space-y-6">
+            <div class="text-center space-y-2">
+                <h3 class="text-3xl font-bold cursive bg-gradient-to-r from-pink-400 to-amber-300 bg-clip-text text-transparent">Snakes & Ladders Party</h3>
+                <p class="text-slate-400 text-sm">Race to square 100! Watch out for the celebratory snakes (👾) and climb the gift ladders (🎁)!</p>
+            </div>
+
+            <div class="bg-slate-950/90 rounded-2xl p-4 border border-slate-800 flex flex-col items-center space-y-6">
+                <div class="w-full flex justify-between items-center px-1 text-xs md:text-sm font-semibold tracking-wider">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-1.5 text-pink-400">
+                            <span class="w-2.5 h-2.5 rounded-full bg-pink-500 shadow-md shadow-pink-500/50"></span>
+                            <span>You: Sq <span id="playerPosText">1</span></span>
+                        </div>
+                    </div>
+                    <div class="text-slate-500 text-[11px] md:text-xs">Objective: Exact Land on 100</div>
+                </div>
+
+                <div id="boardContainer" class="relative w-full flex justify-center select-none">
+                    <div class="snakes-board bg-slate-950 border border-slate-800 p-1 rounded-xl gap-[2px]">
+                        </div>
+
+                    <div id="playerToken" class="absolute w-5 h-5 rounded-full bg-pink-500 border-2 border-white shadow-lg shadow-pink-500/80 flex items-center justify-center font-black text-[9px] text-white transition-all duration-300 transform scale-110 z-20" style="display:none;">P</div>
+                </div>
+
+                <div class="flex items-center space-x-6 bg-slate-900/60 p-4 rounded-xl border border-white/5 w-full justify-center">
+                    <div id="snakesDice" class="w-12 h-12 bg-white rounded-xl text-slate-950 flex items-center justify-center font-black text-2xl shadow-xl border-b-4 border-slate-300 select-none">
+                        1
+                    </div>
+                    <button id="snakesDiceBtn" onclick="rollSnakesDice()" class="bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:opacity-95 text-white font-bold py-2.5 px-6 rounded-xl shadow-md transform active:scale-95 transition-all text-sm tracking-wide">
+                        🎲 Roll Dice
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-slate-900/40 backdrop-blur-xl p-6 rounded-3xl shadow-xl border border-white/10 max-w-md mx-auto text-center space-y-4">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300">🎵 This music is dedicated to you</h3>
+            <audio id="bgMusic" loop>
+                <source src="c1.mpeg" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <button 
+                onclick="toggleMusic()" 
+                id="musicBtn" 
+                class="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-3 px-8 rounded-full shadow-lg transition-all transform active:scale-95"
+            >
+                <span id="playIcon">▶</span>
+                <span id="musicText">Play Favorite Track</span>
+            </button>
+        </section>
+
+        <section class="bg-gradient-to-r from-pink-500/5 via-purple-500/5 to-indigo-500/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10 max-w-2xl mx-auto text-center space-y-4">
+            <div class="text-4xl drop-shadow-sm">✨</div>
+            <h3 class="text-2xl font-bold bg-gradient-to-r from-fuchsia-300 to-indigo-300 bg-clip-text text-transparent">A Special Note For You</h3>
+            <p class="text-slate-300 leading-relaxed italic md:text-lg">
+                My dear best friend, you should always be happy. I will always be there for you in both joy and sadness. Until now, I've thought about everyone, but you're the first friend who thought about me, and that's why you're so special to me. And we will be together until the end of life.
+            </p>
+        </section>
+        
+    </div>
+
+    <script>
+        function navigateToPage2(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('recipientName').value;
+            const errorElement = document.getElementById('errorMessage');
+            
+            if (nameInput === "CHILD") {
+                errorElement.classList.add('hidden');
+                document.getElementById('displayName').innerText = nameInput;
+                document.getElementById('page1').classList.add('hidden');
+                document.getElementById('page2').classList.remove('hidden');
+                
+                startCountdown();
+                initFireworks(); 
+                buildSnakesBoard(); // Generate standard 10x10 snakes and ladders tracking layout maps
+            } else {
+                errorElement.classList.remove('hidden');
+                document.getElementById('recipientName').select();
+            }
+        }
+
+        function startCountdown() {
+            const currentYear = new Date().getFullYear();
+            let targetDate = new Date(`June 23, ${currentYear} 00:00:00`).getTime();
+
+            function updateTimer() {
+                const now = new Date().getTime();
+                let difference = targetDate - now;
+
+                if (difference < 0) {
+                    targetDate = new Date(`June 23, ${currentYear + 1} 00:00:00`).getTime();
+                    difference = targetDate - now;
+                }
+
+                const d = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const h = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((difference % (1000 * 60)) / 1000);
+
+                document.getElementById('days').innerText = d < 10 ? '0' + d : d;
+                document.getElementById('hours').innerText = h < 10 ? '0' + h : h;
+                document.getElementById('minutes').innerText = m < 10 ? '0' + m : m;
+                document.getElementById('seconds').innerText = s < 10 ? '0' + s : s;
+            }
+
+            updateTimer(); 
+            setInterval(updateTimer, 1000);
+        }
+
+        // ================= SNAKES & LADDERS CORE ENGINE MODULE =================
+        let currentSquarePos = 1;
+        
+        // Defined matrix maps for portals routing indices configurations triggers links
+        const laddersMap = { 4: 25, 13: 46, 33: 49, 42: 63, 50: 69, 62: 81, 74: 92 };
+        const snakesMap = { 27: 5, 43: 18, 54: 31, 66: 45, 76: 58, 89: 53, 99: 41 };
+
+        function buildSnakesBoard() {
+            const boardGrid = document.querySelector('.snakes-board');
+            boardGrid.innerHTML = '';
+
+            // Generating traditional boustrophedon layout array matrix loops (alternate row scans mapping direction paths)
+            for (let row = 9; row >= 0; row--) {
+                let colSequence = [];
+                if (row % 2 === 1) {
+                    // Left to Right mapping sequence calculations
+                    for (let col = 0; col < 10; col++) colSequence.push((row * 10) + col + 1);
+                } else {
+                    // Right to Left scanning configuration calculations
+                    for (let col = 9; col >= 0; col--) colSequence.push((row * 10) + col + 1);
+                }
+
+                colSequence.forEach(squareNum => {
+                    const blockCell = document.createElement('div');
+                    blockCell.className = 'text-[9px] font-semibold text-slate-500 flex flex-col items-center justify-between p-0.5 rounded-[3px] border border-slate-900 transition-all ';
+                    blockCell.setAttribute('data-id', squareNum);
+
+                    // Alternate cell structural coloring rules definitions
+                    if (squareNum % 2 === 0) {
+                        blockCell.className += 'bg-slate-900/60';
+                    } else {
+                        blockCell.className += 'bg-slate-950/80';
+                    }
+
+                    // Special graphic decoration marker overlays injecting portal hints values indicators
+                    if (laddersMap[squareNum]) {
+                        blockCell.className += ' !bg-emerald-950/40 border-emerald-800/30';
+                        blockCell.innerHTML = `<span class="text-[8px] text-emerald-400">🎁 to ${laddersMap[squareNum]}</span><span class="text-slate-400">${squareNum}</span>`;
+                    } else if (snakesMap[squareNum]) {
+                        blockCell.className += ' !bg-rose-950/40 border-rose-900/30';
+                        blockCell.innerHTML = `<span class="text-[8px] text-rose-400">👾 to ${snakesMap[squareNum]}</span><span class="text-slate-400">${squareNum}</span>`;
+                    } else if (squareNum === 100) {
+                        blockCell.className += ' bg-gradient-to-tr from-purple-600 to-pink-500 font-bold !text-white';
+                        blockCell.innerHTML = '<span>👑 Win</span><span>100</span>';
+                    } else {
+                        blockCell.innerHTML = `<span></span><span class="text-[8px] opacity-70">${squareNum}</span>`;
+                    }
+
+                    boardGrid.appendChild(blockCell);
+                });
+            }
+            renderPlayerTokenOnCoordinates();
+        }
+
+        function renderPlayerTokenOnCoordinates() {
+            const token = document.getElementById('playerToken');
+            const targetedCellNode = document.querySelector(`[data-id="${currentSquarePos}"]`);
+
+            if (targetedCellNode && token) {
+                token.style.display = 'flex';
+                // Center calculations inside relative offset vectors geometry space bounds boundaries
+                token.style.left = `${targetedCellNode.offsetLeft + (targetedCellNode.clientWidth / 2) - 10}px`;
+                token.style.top = `${targetedCellNode.offsetTop + (targetedCellNode.clientHeight / 2) - 10}px`;
+            }
+            document.getElementById('playerPosText').innerText = currentSquarePos;
+        }
+
+        function rollSnakesDice() {
+            const dice = document.getElementById('snakesDice');
+            const btn = document.getElementById('snakesDiceBtn');
+
+            btn.disabled = true;
+            dice.classList.add('animate-roll');
+
+            const stepsRolled = Math.floor(Math.random() * 6) + 1;
+
+            setTimeout(() => {
+                dice.innerText = stepsRolled;
+                dice.classList.remove('animate-roll');
+                processPlayerMovement(stepsRolled);
+                btn.disabled = false;
+            }, 400);
+        }
+
+        function processPlayerMovement(rolledAmount) {
+            let nextSquarePos = currentSquarePos + rolledAmount;
+
+            // Clamping rules condition limiting precise target arrivals validation mapping check boundary parameters
+            if (nextSquarePos > 100) {
+                // Skips execution loops forcing exact ceiling lands bounds conditions mapping targets
+                return;
+            }
+
+            currentSquarePos = nextSquarePos;
+            renderPlayerTokenOnCoordinates();
+
+            // Evaluate portal state conditions triggers sequence delays maps links triggers
+            setTimeout(() => {
+                if (laddersMap[currentSquarePos]) {
+                    currentSquarePos = laddersMap[currentSquarePos];
+                    renderPlayerTokenOnCoordinates();
+                } else if (snakesMap[currentSquarePos]) {
+                    currentSquarePos = snakesMap[currentSquarePos];
+                    renderPlayerTokenOnCoordinates();
+                }
+
+                // Check standard endgame constraints parameters mapping properties definition
+                if (currentSquarePos === 100) {
+                    alert("🎉 Happy Birthday! You've successfully conquered the board and unlocked the final celebration zone! 👑");
+                    currentSquarePos = 1; // Auto reset state variables context metrics
+                    renderPlayerTokenOnCoordinates();
+                }
+            }, 400);
+        }
+
+        const music = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicBtn');
+        const playIcon = document.getElementById('playIcon');
+        const musicText = document.getElementById('musicText');
+
+        function toggleMusic() {
+            if (music.paused) {
+                music.play();
+                playIcon.innerText = "⏸";
+                musicText.innerText = "Pause Music";
+                musicBtn.classList.replace('from-purple-600', 'from-pink-600');
+                musicBtn.classList.replace('to-indigo-600', 'to-purple-600');
+            } else {
+                music.pause();
+                playIcon.innerText = "▶";
+                musicText.innerText = "Play Favorite Track";
+                musicBtn.classList.replace('from-pink-600', 'from-purple-600');
+                musicBtn.classList.replace('to-purple-600', 'to-indigo-600');
+            }
+        }
+
+        function initFireworks() {
+            const canvas = document.getElementById('fireworksCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            const particles = [];
+            const fireworks = [];
+
+            class Firework {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height;
+                    this.targetY = Math.random() * (canvas.height * 0.5);
+                    this.speed = Math.random() * 3 + 4;
+                    this.hue = Math.random() * 360;
+                }
+                update() {
+                    this.y -= this.speed;
+                    if (this.y <= this.targetY) {
+                        explodeFireworks(this.x, this.y, this.hue);
+                        return false;
+                    }
+                    return true;
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${this.hue}, 100%, 70%)`;
+                    ctx.fill();
+                }
+            }
+
+            class Particle {
+                constructor(x, y, hue) {
+                    this.x = x;
+                    this.y = y;
+                    this.hue = hue;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.speed = Math.random() * 5 + 2;
+                    this.friction = 0.96;
+                    this.gravity = 0.12;
+                    this.alpha = 1;
+                    this.decay = Math.random() * 0.015 + 0.01;
+                }
+                update() {
+                    this.speed *= this.friction;
+                    this.x += Math.cos(this.angle) * this.speed;
+                    this.y += Math.sin(this.angle) * this.speed + this.gravity;
+                    this.alpha -= this.decay;
+                    return this.alpha > 0;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, Math.random() * 2.5 + 1, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${this.hue}, 100%, 65%)`;
+                    ctx.shadowBlur = 6;
+                    ctx.shadowColor = `hsl(${this.hue}, 100%, 65%)`;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            function explodeFireworks(x, y, hue) {
+                const count = 75; 
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle(x, y, hue));
+                }
+            }
+
+            function animate() {
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.2)'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (Math.random() < 0.05 && fireworks.length < 6) {
+                    fireworks.push(new Firework());
+                }
+
+                for (let i = fireworks.length - 1; i >= 0; i--) {
+                    if (!fireworks[i].update()) {
+                        fireworks.splice(i, 1);
+                    } else {
+                        fireworks[i].draw();
+                    }
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    if (!particles[i].update()) {
+                        particles.splice(i, 1);
+                    } else {
+                        particles[i].draw();
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
